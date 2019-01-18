@@ -37,12 +37,12 @@ type DocumentPreview struct {
 	Link        string
 }
 
-func Scrape(uri string, maxRedirect int) (*Document, error) {
+func Scrape(uri string, maxRedirect int, authorization string) (*Document, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
 	}
-	return (&Scraper{Url: u, MaxRedirect: maxRedirect}).Scrape()
+	return (&Scraper{Url: u, MaxRedirect: maxRedirect, Authorization: authorization}).Scrape()
 }
 
 func (scraper *Scraper) Scrape() (*Document, error) {
