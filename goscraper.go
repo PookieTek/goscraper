@@ -122,7 +122,8 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 	}
 	req.Header.Add("User-Agent", "GoScraper")
 	if len(scraper.Authorization) > 0 {
-		req.Header.Add("Authorization", scraper.Authorization)
+		cookie := "access_token="+ scraper.Authorization[7:] +"; refresh_token="+ scraper.Authorization[7:] +"; expires_at=1947832244556; main_access_token="+ scraper.Authorization[7:] +"; main_refresh_token="+ scraper.Authorization[7:] +"; main_expires_at=1947832244556;"
+		req.Header.Add("Cookie", cookie)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
