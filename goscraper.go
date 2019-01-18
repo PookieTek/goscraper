@@ -122,7 +122,7 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 	}
 	req.Header.Add("User-Agent", "GoScraper")
 	if len(scraper.Authorization) > 0 {
-		req.Header.Add("Authorization", "Bearer " + scraper.Authorization)
+		req.Header.Add("Authorization", scraper.Authorization)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
