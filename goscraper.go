@@ -22,6 +22,7 @@ type Scraper struct {
 	Url                *url.URL
 	EscapedFragmentUrl *url.URL
 	MaxRedirect        int
+	Authorization        string
 }
 
 type Document struct {
@@ -120,7 +121,9 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 		return nil, err
 	}
 	req.Header.Add("User-Agent", "GoScraper")
-
+	if len(scraper.Authorization) > 0 {
+		req.Header.Add("Authorization", "Bearer " + scraper.Authorization)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
