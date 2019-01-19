@@ -11,6 +11,7 @@ import (
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"log"
 )
 
 var (
@@ -124,6 +125,8 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 	if len(scraper.Authorization) > 0 {
 		cookie := "access_token="+ scraper.Authorization[7:] +"; refresh_token="+ scraper.Authorization[7:] +"; expires_at=1947832244556; main_access_token="+ scraper.Authorization[7:] +"; main_refresh_token="+ scraper.Authorization[7:] +"; main_expires_at=1947832244556;"
 		req.Header.Set("Cookie", cookie)
+		log.Println("Cookie : ")
+		log.Println(cookie)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
