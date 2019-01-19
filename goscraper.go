@@ -11,7 +11,6 @@ import (
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
-	"net/http/cookiejar"
 )
 
 var (
@@ -122,52 +121,11 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 		return nil, err
 	}
 	req.Header.Add("User-Agent", "GoScraper")
-	gCurCookieJar, _ := cookiejar.New(nil)
 	if len(scraper.Authorization) > 0 {
-		var cookies []*http.Cookie
-		cookie := &http.Cookie{
-			Name: "access_token",
-			Value: scraper.Authorization[7:],
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		cookie = &http.Cookie{
-			Name: "main_access_token",
-			Value: scraper.Authorization[7:],
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		cookie = &http.Cookie{
-			Name: "refresh_token",
-			Value: scraper.Authorization[7:],
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		cookie = &http.Cookie{
-			Name: "main_refresh_token",
-			Value: scraper.Authorization[7:],
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		cookie = &http.Cookie{
-			Name: "expires_at",
-			Value: "1947832244556",
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		cookie = &http.Cookie{
-			Name: "main_expires_at",
-			Value: "1947832244556",
-			Path:   "/",
-		}
-		cookies = append(cookies, cookie)
-		u, _ := url.Parse(scraper.getUrl())
-		gCurCookieJar.SetCookies(u, cookies)
+		cookie := "access_token="+ scraper.Authorization[7:] +"; refresh_token="+ scraper.Authorization[7:] +"; brainer_v4=true; expires_at=1947832244556; main_access_token="+ scraper.Authorization[7:] +"; main_refresh_token="+ scraper.Authorization[7:] +"; main_expires_at=1947832244556;"
+		req.Header.Set("Cookie", cookie)
 	}
-	httpClient := &http.Client{
-		Jar:           gCurCookieJar,
-	}
-	resp, err := httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
