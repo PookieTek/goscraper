@@ -23,6 +23,7 @@ type Scraper struct {
 	EscapedFragmentUrl *url.URL
 	MaxRedirect        int
 	Authorization        string
+	Language		 string
 }
 
 type Document struct {
@@ -37,12 +38,12 @@ type DocumentPreview struct {
 	Link        string
 }
 
-func Scrape(uri string, maxRedirect int, authorization string) (*Document, error) {
+func Scrape(uri string, maxRedirect int, language, authorization string) (*Document, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
 	}
-	return (&Scraper{Url: u, MaxRedirect: maxRedirect, Authorization: authorization}).Scrape()
+	return (&Scraper{Url: u, MaxRedirect: maxRedirect, Language: language, Authorization: authorization}).Scrape()
 }
 
 func (scraper *Scraper) Scrape() (*Document, error) {
@@ -124,6 +125,11 @@ func (scraper *Scraper) getDocument() (*Document, error) {
 	if len(scraper.Authorization) > 0 {
 		cookie := "access_token="+ scraper.Authorization[7:] +"; refresh_token="+ scraper.Authorization[7:] +"; brainer_v4=true; expires_at=1947832244556; main_access_token="+ scraper.Authorization[7:] +"; main_refresh_token="+ scraper.Authorization[7:] +"; main_expires_at=1947832244556;"
 		req.Header.Set("Cookie", cookie)
+	}
+	if len(scraper.Language) > 0 {
+		req.Header.Add("Accept-Language", scraper.Language)
+	} else {
+		req.Header.Add("Accept-Language", "en")
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if resp != nil {
