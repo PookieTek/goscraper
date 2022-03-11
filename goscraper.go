@@ -208,7 +208,7 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 				if cleanStr(attr.Key) == "rel" && cleanStr(attr.Val) == "canonical" {
 					canonical = true
 				}
-				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcut icon" || cleanStr(attr.Val) == "icon") {
+				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcuticon" || cleanStr(attr.Val) == "icon") {
 					isFavicon = true
 				}
 
