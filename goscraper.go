@@ -20,6 +20,7 @@ var (
 
 type Scraper struct {
 	Url                *url.URL
+	Target             *url.URL
 	EscapedFragmentUrl *url.URL
 	MaxRedirect        int
 	Authorization      string
@@ -45,7 +46,7 @@ func Scrape(uri string, maxRedirect int, language, authorization string) (*Docum
 	if err != nil {
 		return nil, err
 	}
-	return (&Scraper{Url: u, MaxRedirect: maxRedirect, Language: language, Authorization: authorization}).Scrape()
+	return (&Scraper{Url: u, Target: u, MaxRedirect: maxRedirect, Language: language, Authorization: authorization}).Scrape()
 }
 
 func (scraper *Scraper) Scrape() (*Document, error) {
@@ -177,11 +178,8 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 	doc.Preview.Images = []string{}
 	// saves previews' link in case that <link rel="canonical"> is found after <meta property="og:url">
 	link := doc.Preview.Link
-
 	doc.Preview.Name = scraper.Url.Host
-
-	doc.Preview.Icon = fmt.Sprintf("%s://%s%s", scraper.Url.Scheme, scraper.Url.Host, "/favicon.ico")
-
+	doc.Preview.Icon = fmt.Sprintf("%s://%s%s", scraper.Target.Scheme, scraper.Target.Host, "/favicon.ico")
 	for {
 		tokenType := t.Next()
 		if tokenType == html.ErrorToken {
@@ -202,30 +200,30 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 
 		case "link":
 			var canonical bool
-			isFavicon := false
 			for _, attr := range token.Attr {
 				href := ""
 				if cleanStr(attr.Key) == "rel" && cleanStr(attr.Val) == "canonical" {
 					canonical = true
 				}
-				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcuticon" || cleanStr(attr.Val) == "icon") {
-					isFavicon = true
-				}
-
-				if cleanStr(attr.Key) == "href" {
-					href = attr.Val
-					if isFavicon {
-						checkUrl, err := url.ParseRequestURI(href)
-						if checkUrl == nil || err != nil || (len(href) > 0 && href[0:1] == "/") {
-							newUrl := fmt.Sprintf("%s://%s%s", scraper.Url.Scheme, scraper.Url.Host, href)
-							newCheckUrl, err := url.ParseRequestURI(newUrl)
-							if newCheckUrl != nil && err == nil {
-								doc.Preview.Icon = newUrl
+				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcut icon" || cleanStr(attr.Val) == "icon") && scraper.Url.Host == scraper.Target.Host {
+					for _, a := range token.Attr {
+						if a.Key == "href" {
+							href := a.Val
+							checkUrl, err := url.ParseRequestURI(href)
+							if checkUrl == nil || err != nil || (len(href) > 0 && href[0:1] == "/") {
+								newUrl := fmt.Sprintf("%s://%s%s", scraper.Url.Scheme, scraper.Url.Host, href)
+								newCheckUrl, err := url.ParseRequestURI(newUrl)
+								if newCheckUrl != nil && err == nil {
+									doc.Preview.Icon = newUrl
+								}
+							} else {
+								doc.Preview.Icon = href
 							}
-						} else {
-							doc.Preview.Icon = href
 						}
 					}
+				}
+				if cleanStr(attr.Key) == "href" {
+					href = attr.Val
 				}
 				if len(href) > 0 && canonical && link != href {
 					hasCanonical = true
@@ -343,8 +341,6 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 		}
 
 	}
-
-	return nil
 }
 
 func avoidByte(b byte) bool {
