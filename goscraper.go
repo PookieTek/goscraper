@@ -216,7 +216,7 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 					href = attr.Val
 					if isFavicon {
 						checkUrl, err := url.ParseRequestURI(href)
-						if checkUrl == nil || err != nil {
+						if checkUrl == nil || err != nil || (len(href) > 0 && href[0:1] == "/") {
 							newUrl := fmt.Sprintf("%s://%s%s", scraper.Url.Scheme, scraper.Url.Host, href)
 							newCheckUrl, err := url.ParseRequestURI(newUrl)
 							if newCheckUrl != nil && err == nil {
