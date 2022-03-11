@@ -211,12 +211,9 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcut icon" || cleanStr(attr.Val) == "icon") {
 					isFavicon = true
 				}
-				if cleanStr(attr.Key) == "rel" {
-					fmt.Println("allo", cleanStr(attr.Val))
-				}
+
 				if cleanStr(attr.Key) == "href" {
 					href = attr.Val
-					fmt.Println("url found", href)
 					if isFavicon {
 						checkUrl, err := url.ParseRequestURI(href)
 						if checkUrl == nil || err != nil {
