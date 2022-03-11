@@ -202,13 +202,30 @@ func (scraper *Scraper) parseDocument(doc *Document) error {
 
 		case "link":
 			var canonical bool
-			var href string
+			isFavicon := false
 			for _, attr := range token.Attr {
+				href := ""
 				if cleanStr(attr.Key) == "rel" && cleanStr(attr.Val) == "canonical" {
 					canonical = true
 				}
+				if cleanStr(attr.Key) == "rel" && (cleanStr(attr.Val) == "shortcut icon" || cleanStr(attr.Val) == "icon") {
+					isFavicon = true
+				}
+
 				if cleanStr(attr.Key) == "href" {
 					href = attr.Val
+					if isFavicon {
+						checkUrl, err := url.ParseRequestURI(href)
+						if checkUrl == nil || err != nil {
+							newUrl := fmt.Sprintf("%s://%s%s", scraper.Url.Scheme, scraper.Url.Host, href)
+							newCheckUrl, err := url.ParseRequestURI(newUrl)
+							if newCheckUrl != nil && err == nil {
+								doc.Preview.Icon = newUrl
+							}
+						} else {
+							doc.Preview.Icon = href
+						}
+					}
 				}
 				if len(href) > 0 && canonical && link != href {
 					hasCanonical = true
